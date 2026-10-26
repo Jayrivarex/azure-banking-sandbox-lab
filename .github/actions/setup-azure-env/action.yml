@@ -24,8 +24,8 @@ runs:
       shell: bash
       run: |
         az login --service-principal \
-          -u "${{ inputs.azure-client-id }}" \
-          -p "${{ inputs.azure-client-secret }}" \
+          --username "${{ inputs.azure-client-id }}" \
+          --password "${{ inputs.azure-client-secret }}" \
           --tenant "realhandsonlabs.com"
 
     - name: Verificar versión y contexto activo de Azure
