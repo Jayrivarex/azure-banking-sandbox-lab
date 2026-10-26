@@ -21,8 +21,8 @@ jobs:
       - name: Configurar entorno de Azure y AKS
         uses: ./.github/actions/setup-azure-env
         with:
-          azure-username: ${{ secrets.AZURE_USERNAME }}
-          azure-password: ${{ secrets.AZURE_PASSWORD }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       - name: Sustituir tag de imagen en manifiestos K8s
         shell: bash

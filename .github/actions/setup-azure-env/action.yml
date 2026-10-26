@@ -1,5 +1,5 @@
 name: 'Setup Azure Environment'
-description: 'Configura la autenticación en Azure con usuario, contraseña y tenant del sandbox'
+description: 'Configura la autenticación oficial en Azure con Service Principal y el contexto de Kubernetes'
 
 inputs:
   resource-group:
@@ -8,26 +8,20 @@ inputs:
   aks-cluster-name:
     required: true
     default: 'banklab-aks-cluster'
-  azure-username:
+  azure-client-id:
     required: true
-  azure-password:
+  azure-client-secret:
     required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Autenticación en Azure CLI (User Login con Tenant)
-      shell: bash
-      env:
-        AZURE_USERNAME: ${{ inputs.azure-username }}
-        AZURE_PASSWORD: ${{ inputs.azure-password }}
-      run: |
-        if [ -z "$AZURE_USERNAME" ] || [ -z "$AZURE_PASSWORD" ]; then
-          echo "ERROR CRITICO: AZURE_USERNAME o AZURE_PASSWORD estan vacios."
-          exit 1
-        fi
-
-        az login --username "$AZURE_USERNAME" --password "$AZURE_PASSWORD" --tenant "realhandsonlabs.com"
+    - name: Login en Azure (Service Principal Oficial)
+      uses: azure/login@v1
+      with:
+        client-id: ${{ inputs.azure-client-id }}
+        tenant-id: 'realhandsonlabs.com'
+        client-secret: ${{ inputs.azure-client-secret }}
 
     - name: Obtener credenciales del clúster AKS
       shell: bash
