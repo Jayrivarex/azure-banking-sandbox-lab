@@ -52,4 +52,5 @@ jobs:
     with:
       environment: 'sandbox'
       image-tag: ${{ github.sha }}
-    secrets: inherit  # <--- ESTO ES LO QUE FALTABA PARA PASAR LOS SECRETOS
+      azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
