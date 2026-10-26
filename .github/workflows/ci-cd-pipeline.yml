@@ -28,22 +28,20 @@ jobs:
       - name: Compilar imagen de contenedor Docker
         shell: bash
         run: |
-          IMAGE_TAG=${{ github.sha }}
-          # Especificamos './src' como el directorio de contexto de Docker
-          docker build -t banklabacr2026.azurecr.io/banking-core-api:$IMAGE_TAG -t banklabacr2026.azurecr.io/banking-core-api:latest ./src
+          docker build -t banklabacr2026.azurecr.io/banking-core-api:${{ github.sha }} -t banklabacr2026.azurecr.io/banking-core-api:latest ./src
 
       - name: Análisis de vulnerabilidades con Trivy (Seguridad Bancaria)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'banklabacr2026.azurecr.io/banking-core-api:${{ env.IMAGE_TAG }}'
+          image-ref: 'banklabacr2026.azurecr.io/banking-core-api:${{ github.sha }}'
           format: 'table'
-          exit-code: '0' # Cambiar a '1' en producción para bloquear builds con vulnerabilidades críticas
+          exit-code: '0' # En producción estricta se cambia a '1' para bloquear si hay CVEs críticas
           severity: 'CRITICAL,HIGH'
 
       - name: Subir imagen segura a Azure Container Registry (ACR)
         shell: bash
         run: |
-          docker push banklabacr2026.azurecr.io/banking-core-api:${{ env.IMAGE_TAG }}
+          docker push banklabacr2026.azurecr.io/banking-core-api:${{ github.sha }}
           docker push banklabacr2026.azurecr.io/banking-core-api:latest
 
   trigger-deploy:
