@@ -1,5 +1,5 @@
 name: 'Setup Azure Environment'
-description: 'Configura la autenticación en Azure por usuario, CLI y el contexto de Kubernetes'
+description: 'Configura la autenticación en Azure por Service Principal y el contexto de Kubernetes'
 
 inputs:
   resource-group:
@@ -10,26 +10,28 @@ inputs:
     description: 'Nombre del clúster AKS'
     required: true
     default: 'banklab-aks-cluster'
-  azure-username:
-    description: 'Azure Sandbox Username'
+  azure-client-id:
+    description: 'Azure Client ID'
     required: true
-  azure-password:
-    description: 'Azure Sandbox Password'
+  azure-client-secret:
+    description: 'Azure Client Secret'
     required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Autenticación en Azure CLI (User Login)
+    - name: Autenticación en Azure CLI (Service Principal)
       shell: bash
       run: |
-        az login -u "${{ inputs.azure-username }}" -p "${{ inputs.azure-password }}"
+        az login --service-principal \
+          -u "${{ inputs.azure-client-id }}" \
+          -p "${{ inputs.azure-client-secret }}" \
+          --tenant "realhandsonlabs.com"
 
     - name: Verificar versión y contexto activo de Azure
       shell: bash
       run: |
         az account show
-        az version
         kubectl version --client
 
     - name: Obtener credenciales del clúster AKS

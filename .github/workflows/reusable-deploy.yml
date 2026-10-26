@@ -23,8 +23,8 @@ jobs:
         with:
           resource-group: '1-5932e71d-playground-sandbox'
           aks-cluster-name: 'banklab-aks-cluster'
-          azure-username: ${{ secrets.AZURE_USERNAME }}
-          azure-password: ${{ secrets.AZURE_PASSWORD }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       - name: Sustituir tag de imagen en manifiestos K8s
         shell: bash
