@@ -1,5 +1,5 @@
 name: 'Setup Azure Environment'
-description: 'Configura la autenticación en Azure por Usuario y el contexto de Kubernetes'
+description: 'Configura la autenticación en Azure con usuario, contraseña y tenant del sandbox'
 
 inputs:
   resource-group:
@@ -16,18 +16,18 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Autenticación en Azure CLI (User Login)
+    - name: Autenticación en Azure CLI (User Login con Tenant)
       shell: bash
       env:
         AZURE_USERNAME: ${{ inputs.azure-username }}
         AZURE_PASSWORD: ${{ inputs.azure-password }}
       run: |
         if [ -z "$AZURE_USERNAME" ] || [ -z "$AZURE_PASSWORD" ]; then
-          echo "ERROR CRITICO: Los secretos AZURE_USERNAME o AZURE_PASSWORD estan vacios."
+          echo "ERROR CRITICO: AZURE_USERNAME o AZURE_PASSWORD estan vacios."
           exit 1
         fi
 
-        az login -u "$AZURE_USERNAME" -p "$AZURE_PASSWORD"
+        az login --username "$AZURE_USERNAME" --password "$AZURE_PASSWORD" --tenant "realhandsonlabs.com"
 
     - name: Obtener credenciales del clúster AKS
       shell: bash
