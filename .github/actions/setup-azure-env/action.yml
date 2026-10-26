@@ -1,5 +1,5 @@
 name: 'Setup Azure Environment'
-description: 'Configura la autenticación en Azure limpiando posibles espacios en los secretos del sandbox'
+description: 'Autenticación como Service Principal usando las credenciales del sandbox'
 
 inputs:
   resource-group:
@@ -16,23 +16,22 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Autenticación en Azure CLI (Con sanitización de credenciales)
+    - name: Login Service Principal en Azure CLI
       shell: bash
       env:
-        RAW_USERNAME: ${{ inputs.azure-username }}
-        RAW_PASSWORD: ${{ inputs.azure-password }}
+        SP_CLIENT_ID: ${{ inputs.azure-username }}
+        SP_CLIENT_SECRET: ${{ inputs.azure-password }}
       run: |
-        # Limpiar espacios en blanco o saltos de línea accidentales del copy-paste
-        AZURE_USERNAME=$(echo "$RAW_USERNAME" | xargs)
-        AZURE_PASSWORD=$(echo "$RAW_PASSWORD" | xargs)
-
-        if [ -z "$AZURE_USERNAME" ] || [ -z "$AZURE_PASSWORD" ]; then
-          echo "ERROR CRITICO: Las credenciales de Azure están vacías."
+        if [ -z "$SP_CLIENT_ID" ] || [ -z "$SP_CLIENT_SECRET" ]; then
+          echo "ERROR CRITICO: Las credenciales están vacías."
           exit 1
         fi
 
-        echo "Iniciando sesión en Azure con el usuario del sandbox..."
-        az login --username "$AZURE_USERNAME" --password "$AZURE_PASSWORD" --tenant "realhandsonlabs.com"
+        echo "Autenticando como Service Principal en Azure..."
+        az login --service-principal \
+          --username "$SP_CLIENT_ID" \
+          --password "$SP_CLIENT_SECRET" \
+          --tenant "realhandsonlabs.com"
 
     - name: Obtener credenciales del clúster AKS
       shell: bash
