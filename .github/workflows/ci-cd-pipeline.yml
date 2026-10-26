@@ -1,0 +1,56 @@
+name: Banking Core CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-scan:
+    name: Build, Scan & Push to ACR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
+
+      - name: Autenticación en Azure Container Registry (ACR)
+        uses: azure/docker-login@v1
+        with:
+          login-server: banklabacr2026.azurecr.io
+          username: ${{ secrets.AZURE_ACR_USERNAME }}
+          password: ${{ secrets.AZURE_ACR_PASSWORD }}
+
+      - name: Compilar imagen de contenedor Docker
+        shell: bash
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          docker build -t banklabacr2026.azurecr.io/banking-core-api:$IMAGE_TAG -t banklabacr2026.azurecr.io/banking-core-api:latest .
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Análisis de vulnerabilidades con Trivy (Seguridad Bancaria)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'banklabacr2026.azurecr.io/banking-core-api:${{ env.IMAGE_TAG }}'
+          format: 'table'
+          exit-code: '0' # Cambiar a '1' en producción para bloquear builds con vulnerabilidades críticas
+          severity: 'CRITICAL,HIGH'
+
+      - name: Subir imagen segura a Azure Container Registry (ACR)
+        shell: bash
+        run: |
+          docker push banklabacr2026.azurecr.io/banking-core-api:${{ env.IMAGE_TAG }}
+          docker push banklabacr2026.azurecr.io/banking-core-api:latest
+
+  trigger-deploy:
+    name: Disparar Despliegue Continuo
+    needs: build-and-scan
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      environment: 'sandbox'
+      image-tag: ${{ github.sha }}

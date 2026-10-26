@@ -1,0 +1,30 @@
+name: 'Setup Azure Environment'
+description: 'Configura las herramientas CLI de Azure y el contexto de Kubernetes'
+
+inputs:
+  resource-group:
+    description: 'Nombre del Resource Group en Azure'
+    required: true
+    default: '1-5932e71d-playground-sandbox'
+  aks-cluster-name:
+    description: 'Nombre del clúster AKS'
+    required: true
+    default: 'banklab-aks-cluster'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configurar Azure CLI y kubectl
+      shell: bash
+      run: |
+        echo "Verificando versiones de herramientas..."
+        az version
+        kubectl version --client
+
+    - name: Obtener credenciales del clúster AKS
+      shell: bash
+      run: |
+        az aks get-credentials \
+          --resource-group ${{ inputs.resource-group }} \
+          --name ${{ inputs.aks-cluster-name }} \
+          --overwrite-existing
