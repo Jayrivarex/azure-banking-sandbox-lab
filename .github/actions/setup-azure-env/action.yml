@@ -1,5 +1,5 @@
 name: 'Setup Azure Environment'
-description: 'Configura la autenticación en Azure por Service Principal y el contexto de Kubernetes'
+description: 'Configura la autenticación en Azure por Usuario y el contexto de Kubernetes'
 
 inputs:
   resource-group:
@@ -8,33 +8,26 @@ inputs:
   aks-cluster-name:
     required: true
     default: 'banklab-aks-cluster'
-  azure-client-id:
+  azure-username:
     required: true
-  azure-client-secret:
+  azure-password:
     required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Validar e iniciar sesión en Azure CLI (Service Principal)
+    - name: Autenticación en Azure CLI (User Login)
       shell: bash
       env:
-        AZURE_CLIENT_ID: ${{ inputs.azure-client-id }}
-        AZURE_CLIENT_SECRET: ${{ inputs.azure-client-secret }}
+        AZURE_USERNAME: ${{ inputs.azure-username }}
+        AZURE_PASSWORD: ${{ inputs.azure-password }}
       run: |
-        if [ -z "$AZURE_CLIENT_ID" ] || [ -z "$AZURE_CLIENT_SECRET" ]; then
-          echo "=================================================="
-          echo "ERROR CRITICO: Los secretos de Azure estan vacios."
-          echo "Ve a GitHub > Settings > Secrets and variables > Actions"
-          echo "y asegúrate de configurar AZURE_CLIENT_ID y AZURE_CLIENT_SECRET."
-          echo "=================================================="
+        if [ -z "$AZURE_USERNAME" ] || [ -z "$AZURE_PASSWORD" ]; then
+          echo "ERROR CRITICO: Los secretos AZURE_USERNAME o AZURE_PASSWORD estan vacios."
           exit 1
         fi
 
-        az login --service-principal \
-          --username "$AZURE_CLIENT_ID" \
-          --password "$AZURE_CLIENT_SECRET" \
-          --tenant "realhandsonlabs.com"
+        az login -u "$AZURE_USERNAME" -p "$AZURE_PASSWORD"
 
     - name: Obtener credenciales del clúster AKS
       shell: bash
