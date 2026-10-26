@@ -9,12 +9,6 @@ on:
       image-tag:
         required: true
         type: string
-      azure-client-id:
-        required: true
-        type: string
-      azure-client-secret:
-        required: true
-        type: string
 
 jobs:
   deploy:
@@ -27,8 +21,8 @@ jobs:
       - name: Configurar entorno de Azure y AKS
         uses: ./.github/actions/setup-azure-env
         with:
-          azure-client-id: ${{ inputs.azure-client-id }}
-          azure-client-secret: ${{ inputs.azure-client-secret }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       - name: Sustituir tag de imagen en manifiestos K8s
         shell: bash
