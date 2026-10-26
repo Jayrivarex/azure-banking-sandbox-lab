@@ -29,8 +29,8 @@ jobs:
         shell: bash
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker build -t banklabacr2026.azurecr.io/banking-core-api:$IMAGE_TAG -t banklabacr2026.azurecr.io/banking-core-api:latest .
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          # Especificamos './src' como el directorio de contexto de Docker
+          docker build -t banklabacr2026.azurecr.io/banking-core-api:$IMAGE_TAG -t banklabacr2026.azurecr.io/banking-core-api:latest ./src
 
       - name: Análisis de vulnerabilidades con Trivy (Seguridad Bancaria)
         uses: aquasecurity/trivy-action@master
