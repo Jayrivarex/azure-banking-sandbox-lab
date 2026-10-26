@@ -1,5 +1,5 @@
 name: 'Setup Azure Environment'
-description: 'Autenticación como Service Principal usando las credenciales del sandbox'
+description: 'Autenticación con usuario del sandbox y el Directory ID correcto'
 
 inputs:
   resource-group:
@@ -16,22 +16,19 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Login Service Principal en Azure CLI
+    - name: Login en Azure CLI con el Tenant ID correcto
       shell: bash
       env:
-        SP_CLIENT_ID: ${{ inputs.azure-username }}
-        SP_CLIENT_SECRET: ${{ inputs.azure-password }}
+        AZURE_USERNAME: ${{ inputs.azure-username }}
+        AZURE_PASSWORD: ${{ inputs.azure-password }}
       run: |
-        if [ -z "$SP_CLIENT_ID" ] || [ -z "$SP_CLIENT_SECRET" ]; then
+        if [ -z "$AZURE_USERNAME" ] || [ -z "$AZURE_PASSWORD" ]; then
           echo "ERROR CRITICO: Las credenciales están vacías."
           exit 1
         fi
 
-        echo "Autenticando como Service Principal en Azure..."
-        az login --service-principal \
-          --username "$SP_CLIENT_ID" \
-          --password "$SP_CLIENT_SECRET" \
-          --tenant "realhandsonlabs.com"
+        echo "Iniciando sesión con el usuario del sandbox y Directory ID correcto..."
+        az login --username "$AZURE_USERNAME" --password "$AZURE_PASSWORD" --tenant "84f1e4ea-8554-43e1-8709-f0b8589ea118"
 
     - name: Obtener credenciales del clúster AKS
       shell: bash
