@@ -18,10 +18,13 @@ runs:
   steps:
     - name: Autenticación en Azure CLI (Service Principal)
       shell: bash
+      env:
+        AZURE_CLIENT_ID: ${{ inputs.azure-client-id }}
+        AZURE_CLIENT_SECRET: ${{ inputs.azure-client-secret }}
       run: |
         az login --service-principal \
-          --username "${{ inputs.azure-client-id }}" \
-          --password "${{ inputs.azure-client-secret }}" \
+          --username "$AZURE_CLIENT_ID" \
+          --password "$AZURE_CLIENT_SECRET" \
           --tenant "realhandsonlabs.com"
 
     - name: Obtener credenciales del clúster AKS
