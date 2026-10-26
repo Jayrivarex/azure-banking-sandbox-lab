@@ -23,12 +23,13 @@ jobs:
         with:
           resource-group: '1-5932e71d-playground-sandbox'
           aks-cluster-name: 'banklab-aks-cluster'
+          azure-username: ${{ secrets.AZURE_USERNAME }}
+          azure-password: ${{ secrets.AZURE_PASSWORD }}
 
       - name: Sustituir tag de imagen en manifiestos K8s
         shell: bash
         run: |
           echo "Actualizando imagen a: banklabacr2026.azurecr.io/banking-core-api:${{ inputs.image-tag }}"
-          # Reemplazo dinámico del tag de la imagen en el manifiesto Kubernetes
           sed -i 's|image: .*|image: banklabacr2026.azurecr.io/banking-core-api:${{ inputs.image-tag }}|g' k8s/deployment.yaml
 
       - name: Aplicar manifiestos en AKS (Kubernetes Manifests)
