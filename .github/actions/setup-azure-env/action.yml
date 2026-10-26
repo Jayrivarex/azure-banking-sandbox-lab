@@ -3,18 +3,14 @@ description: 'Configura la autenticación en Azure por Service Principal y el co
 
 inputs:
   resource-group:
-    description: 'Nombre del Resource Group en Azure'
     required: true
     default: '1-5932e71d-playground-sandbox'
   aks-cluster-name:
-    description: 'Nombre del clúster AKS'
     required: true
     default: 'banklab-aks-cluster'
   azure-client-id:
-    description: 'Azure Client ID'
     required: true
   azure-client-secret:
-    description: 'Azure Client Secret'
     required: true
 
 runs:
@@ -28,16 +24,10 @@ runs:
           --password "${{ inputs.azure-client-secret }}" \
           --tenant "realhandsonlabs.com"
 
-    - name: Verificar versión y contexto activo de Azure
-      shell: bash
-      run: |
-        az account show
-        kubectl version --client
-
     - name: Obtener credenciales del clúster AKS
       shell: bash
       run: |
         az aks get-credentials \
-          --resource-group ${{ inputs.resource-group }} \
-          --name ${{ inputs.aks-cluster-name }} \
+          --resource-group "${{ inputs.resource-group }}" \
+          --name "${{ inputs.aks-cluster-name }}" \
           --overwrite-existing
