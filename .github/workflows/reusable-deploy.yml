@@ -18,11 +18,11 @@ jobs:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
 
-      - name: Configurar entorno de Azure y AKS
-        uses: ./.github/actions/setup-azure-env
+      - name: Configurar Kubeconfig de Kubernetes
+        uses: azure/k8s-set-context@v3
         with:
-          azure-username: ${{ secrets.AZURE_USERNAME }}
-          azure-password: ${{ secrets.AZURE_PASSWORD }}
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
       - name: Sustituir tag de imagen en manifiestos K8s
         shell: bash
