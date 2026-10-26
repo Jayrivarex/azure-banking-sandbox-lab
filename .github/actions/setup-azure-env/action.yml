@@ -1,5 +1,5 @@
 name: 'Setup Azure Environment'
-description: 'Configura las herramientas CLI de Azure y el contexto de Kubernetes'
+description: 'Configura la autenticación en Azure por usuario, CLI y el contexto de Kubernetes'
 
 inputs:
   resource-group:
@@ -10,14 +10,25 @@ inputs:
     description: 'Nombre del clúster AKS'
     required: true
     default: 'banklab-aks-cluster'
+  azure-username:
+    description: 'Azure Sandbox Username'
+    required: true
+  azure-password:
+    description: 'Azure Sandbox Password'
+    required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Configurar Azure CLI y kubectl
+    - name: Autenticación en Azure CLI (User Login)
       shell: bash
       run: |
-        echo "Verificando versiones de herramientas..."
+        az login -u "${{ inputs.azure-username }}" -p "${{ inputs.azure-password }}"
+
+    - name: Verificar versión y contexto activo de Azure
+      shell: bash
+      run: |
+        az account show
         az version
         kubectl version --client
 

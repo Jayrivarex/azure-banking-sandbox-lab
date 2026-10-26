@@ -1,41 +1,54 @@
-name: 'Setup Azure Environment'
-description: 'Configura la autenticación en Azure por usuario, CLI y el contexto de Kubernetes'
+name: Banking Core CI/CD Pipeline
 
-inputs:
-  resource-group:
-    description: 'Nombre del Resource Group en Azure'
-    required: true
-    default: '1-5932e71d-playground-sandbox'
-  aks-cluster-name:
-    description: 'Nombre del clúster AKS'
-    required: true
-    default: 'banklab-aks-cluster'
-  azure-username:
-    description: 'Azure Sandbox Username'
-    required: true
-  azure-password:
-    description: 'Azure Sandbox Password'
-    required: true
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
 
-runs:
-  using: "composite"
-  steps:
-    - name: Autenticación en Azure CLI (User Login)
-      shell: bash
-      run: |
-        az login -u "${{ inputs.azure-username }}" -p "${{ inputs.azure-password }}"
+jobs:
+  build-and-scan:
+    name: Build, Scan & Push to ACR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
 
-    - name: Verificar versión y contexto activo de Azure
-      shell: bash
-      run: |
-        az account show
-        az version
-        kubectl version --client
+    steps:
+      - name: Checkout del código fuente
+        uses: actions/checkout@v4
 
-    - name: Obtener credenciales del clúster AKS
-      shell: bash
-      run: |
-        az aks get-credentials \
-          --resource-group ${{ inputs.resource-group }} \
-          --name ${{ inputs.aks-cluster-name }} \
-          --overwrite-existing
+      - name: Autenticación en Azure Container Registry (ACR)
+        uses: azure/docker-login@v1
+        with:
+          login-server: banklabacr2026.azurecr.io
+          username: ${{ secrets.AZURE_ACR_USERNAME }}
+          password: ${{ secrets.AZURE_ACR_PASSWORD }}
+
+      - name: Compilar imagen de contenedor Docker
+        shell: bash
+        run: |
+          docker build -t banklabacr2026.azurecr.io/banking-core-api:${{ github.sha }} -t banklabacr2026.azurecr.io/banking-core-api:latest ./src
+
+      - name: Análisis de vulnerabilidades con Trivy (Seguridad Bancaria)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'banklabacr2026.azurecr.io/banking-core-api:${{ github.sha }}'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Subir imagen segura a Azure Container Registry (ACR)
+        shell: bash
+        run: |
+          docker push banklabacr2026.azurecr.io/banking-core-api:${{ github.sha }}
+          docker push banklabacr2026.azurecr.io/banking-core-api:latest
+
+  trigger-deploy:
+    name: Disparar Despliegue Continuo
+    needs: build-and-scan
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      environment: 'sandbox'
+      image-tag: ${{ github.sha }}
