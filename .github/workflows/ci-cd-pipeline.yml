@@ -52,3 +52,4 @@ jobs:
     with:
       environment: 'sandbox'
       image-tag: ${{ github.sha }}
+    secrets: inherit  # <--- ESTO ES LO QUE FALTABA PARA PASAR LOS SECRETOS
