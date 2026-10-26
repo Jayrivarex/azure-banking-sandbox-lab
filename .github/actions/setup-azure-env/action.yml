@@ -16,12 +16,21 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Autenticación en Azure CLI (Service Principal)
+    - name: Validar e iniciar sesión en Azure CLI (Service Principal)
       shell: bash
       env:
         AZURE_CLIENT_ID: ${{ inputs.azure-client-id }}
         AZURE_CLIENT_SECRET: ${{ inputs.azure-client-secret }}
       run: |
+        if [ -z "$AZURE_CLIENT_ID" ] || [ -z "$AZURE_CLIENT_SECRET" ]; then
+          echo "=================================================="
+          echo "ERROR CRITICO: Los secretos de Azure estan vacios."
+          echo "Ve a GitHub > Settings > Secrets and variables > Actions"
+          echo "y asegúrate de configurar AZURE_CLIENT_ID y AZURE_CLIENT_SECRET."
+          echo "=================================================="
+          exit 1
+        fi
+
         az login --service-principal \
           --username "$AZURE_CLIENT_ID" \
           --password "$AZURE_CLIENT_SECRET" \
